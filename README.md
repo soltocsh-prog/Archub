@@ -2,7 +2,7 @@
 
 ## 1. 목적 및 취지 (Purpose & Intent)
 
-**ArchHub**는 소규모 건축사사무소의 업무 효율성을 극대화하기 위해 기획된 **맞춤형 건축 전용 브라우저 플랫폼**입니다. 
+**ArchHub**는 소규모 건축사사무소의 업무 효율성을 극대화하기 위해 기획된 **맞춤형 건축 전용 브라우저 플랫폼**입니다.
 
 최근 건축 업계에서도 법규 검토, 이미지 생성, 사례 연구, 보고서 작성 등 다양한 AI 및 기술 솔루션의 활용도가 높아지고 있습니다. 하지만 이러한 서비스들이 뿔뿔이 흩어져 있어 작업의 흐름이 끊기고, 새로운 툴에 대한 사내 노하우가 파편화되는 문제가 발생합니다.
 
@@ -44,7 +44,100 @@ ArchHub는 직관적인 **3-Panel 레이아웃**을 기반으로 작동합니다
 
 ---
 
-## 4. 개발 로드맵 (Implementation Roadmap)
+## 4. 프로젝트 구조 (Project Structure)
+
+```
+Archub/
+├── public/                     # 정적 에셋
+│   ├── favicon.svg
+│   └── icons.svg
+│
+├── src/
+│   ├── main.jsx                # 앱 진입점
+│   ├── App.jsx                 # 루트 컴포넌트 및 라우팅
+│   ├── App.css
+│   ├── index.css               # 전역 스타일
+│   │
+│   ├── layouts/
+│   │   └── MainLayout.jsx      # 3-Panel 레이아웃 (Sidebar + Stage + HelpBar)
+│   │
+│   ├── components/
+│   │   ├── Sidebar.jsx         # 좌측 워크플로우 네비게이션
+│   │   ├── HelpBar.jsx         # 우측 마크다운 도움말 패널
+│   │   └── CalendarWidget.jsx  # 일정 위젯
+│   │
+│   ├── pages/
+│   │   ├── WorkflowDashboard.jsx   # 메인 대시보드
+│   │   ├── SaaSViewer.jsx          # SaaS iframe 래퍼
+│   │   ├── CalendarPage.jsx        # 일정 페이지
+│   │   ├── ResourcesPage.jsx       # 스크립트 & 리소스 뱅크
+│   │   └── VaultPage.jsx           # 계정 금고 (암호화)
+│   │
+│   ├── context/
+│   │   └── WorkflowContext.jsx # 전역 워크플로우 상태 관리
+│   │
+│   └── data/
+│       └── workflows.js        # 워크플로우 및 SaaS 목록 데이터
+│
+├── index.html
+├── vite.config.js              # Vite + PWA 빌드 설정
+├── eslint.config.js
+├── package.json
+└── .gitignore
+```
+
+---
+
+## 5. KCS 표준시방서 자동화 연동 (KCS Automation Integration)
+
+ArchHub의 **Main Stage**에는 외부 SaaS뿐 아니라 **내부 도구**도 통합됩니다. 그 첫 번째 내부 도구가 **KCS 표준시방서 자동화**입니다.
+
+### 개요
+
+KCS 표준시방서 자동화는 국가건설기준(KCS) API를 호출하여 표준시방서 문서를 **한글(HWP) 파일로 자동 생성**하는 Python FastAPI 백엔드 서비스입니다.
+
+### 연결 구조
+
+```
+[ArchHub Frontend]                [KCS Automation Backend]
+  src/pages/
+  └── KcsAutomationPage.jsx  ──►  FastAPI (main.py)
+                                       │
+                              ┌────────┴─────────────┐
+                              │     services/        │
+                              │  kcsc_api_client.py  │──► 국가건설기준 API
+                              │  hml_generator.py    │──► HML/HWP 변환
+                              │  document_orchestrator│
+                              └──────────────────────┘
+```
+
+### 리포지토리 분리 현황
+
+| 리포지토리 | 내용 | 링크 |
+|-----------|------|------|
+| **Archub** (이 리포) | ArchHub 프론트엔드 (React + Vite PWA) | [soltocsh-prog/Archub](https://github.com/soltocsh-prog/Archub) |
+| **KCS Automation** | KCS 표준시방서 자동화 백엔드 (Python FastAPI) | [soltocsh-prog/-](https://github.com/soltocsh-prog/-) |
+
+### 로컬 실행 방법
+
+**프론트엔드 (ArchHub)**
+```bash
+npm install
+npm run dev
+```
+
+**백엔드 (KCS Automation)**
+```bash
+cd ../KCS_Automation
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+> 두 서비스를 동시에 실행하면 ArchHub의 KCS 자동화 탭에서 직접 표준시방서 문서를 생성할 수 있습니다.
+
+---
+
+## 6. 개발 로드맵 (Implementation Roadmap)
 
 ### [Phase 1: Low-Level] 인프라 및 껍데기 구축
 *   Vite + React Router 환경 세팅 및 Tailwind CSS 연동.
@@ -60,6 +153,7 @@ ArchHub는 직관적인 **3-Panel 레이아웃**을 기반으로 작동합니다
 *   Web Crypto API를 활용한 공용 계정 금고(Vault) 구현.
 *   사내 캘린더 API 연동 및 스크립트 뷰어 삽입.
 *   오프라인 상태에서도 캐싱된 매뉴얼을 열람할 수 있도록 서비스 워커 로직 강화.
+*   **KCS 표준시방서 자동화 탭 통합** (내부 FastAPI 백엔드 연동).
 
 ### [Phase 4: Expansion] Electron/Tauri 기반 데스크탑 앱 확장
 *   **Iframe 제약 완벽 우회**: 웹 기반 Iframe에서 열리지 않는 모든 SaaS를 데스크탑 셸 내부에 온전히 렌더링.
