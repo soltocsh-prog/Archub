@@ -137,24 +137,42 @@ uvicorn main:app --reload
 
 ---
 
-## 6. 개발 로드맵 (Implementation Roadmap)
+## 6. 핵심 설계 결정 사항 (Key Decisions)
 
-### [Phase 1: Low-Level] 인프라 및 껍데기 구축
+### 6.1. 외부 SaaS Iframe 임베딩과 보안 한계
+*   **이슈**: NotebookLM, Pinterest 등 최신 SaaS는 자체 보안 정책(X-Frame-Options, CSP)으로 인해 ArchHub의 `<iframe>` 내부에서 열리는 것을 차단합니다.
+*   **현재 결정**: Iframe 차단 서비스의 경우 메인 스테이지에 안내 문구를 띄우고 **[새 창에서 열기]** 버튼을 제공하는 우회 방식을 채택. (사이드바 탭 상태는 유지)
+*   **향후 계획**: [Phase 4] Electron/Tauri 기반 데스크탑 앱 전환 시 자체 Webview로 완전 해결 예정.
+
+### 6.2. 통합 계정 금고 (Vault) 설계
+*   Same-Origin Policy 상 다른 도메인 iframe에 스크립트 주입이 불가하므로 '비밀번호 자동 주입' 기능은 구현하지 않음.
+*   Vault는 **사내 공용 계정 게시판** 및 **툴 관리소** 역할로 정의. 자동 로그인은 브라우저 기본 세션/쿠키 활용.
+
+### 6.3. 동적 워크플로우 아키텍처
+*   초기 고정 JSON(`workflows.js`) → **React Context + LocalStorage 기반 동적 상태 관리**로 리팩토링.
+*   사용자가 직접 원하는 워크플로우에 SaaS 도구를 추가/삭제 가능.
+
+---
+
+## 7. 개발 로드맵 (Implementation Roadmap)
+
+### ✅ [Phase 1: Low-Level] 인프라 및 껍데기 구축 — **완료**
 *   Vite + React Router 환경 세팅 및 Tailwind CSS 연동.
 *   3단 그리드 레이아웃 (Sidebar, Main Stage, Help Bar) 완성.
 *   사이드바 접힘 로직 및 워크플로우 탭 상태(`localStorage`) 구현.
 
-### [Phase 2: Mid-Level] 콘텐츠 서빙 및 SaaS 임베딩
-*   SaaS 목록 대시보드 연동 및 Iframe 래퍼 컴포넌트 제작.
+### ✅ [Phase 2: Mid-Level] 콘텐츠 서빙 및 SaaS 임베딩 — **완료**
+*   SaaS 목록 대시보드 연동 및 Iframe 래퍼 컴포넌트(`SaaSViewer`) 제작.
 *   보안 제약(X-Frame-Options)이 있는 사이트 대상 예외 처리(`window.open`).
 *   우측 매뉴얼 바 컴포넌트(`react-markdown`) 뼈대 구축 및 PWA 기본 설정.
 
-### [Phase 3: High-Level] 고급 기능 및 사내 데이터 통합
-*   Web Crypto API를 활용한 공용 계정 금고(Vault) 구현.
-*   사내 캘린더 API 연동 및 스크립트 뷰어 삽입.
-*   오프라인 상태에서도 캐싱된 매뉴얼을 열람할 수 있도록 서비스 워커 로직 강화.
-*   **KCS 표준시방서 자동화 탭 통합** (내부 FastAPI 백엔드 연동).
+### 🔄 [Phase 3: High-Level] 고급 기능 및 사내 데이터 통합 — **진행 중**
+*   ✅ **공용 캘린더 연동**: 복수 구글 캘린더 ID 중첩 렌더링 (`CalendarPage`, `CalendarWidget`)
+*   ✅ **스크립트 & 리소스 뱅크 UI**: 아코디언 메뉴, 태그 필터링, 프리미엄 카드 UI (`ResourcesPage`)
+*   ✅ **동적 워크플로우 & Vault UI**: Context 기반 툴 추가/삭제, `VaultPage` 구축
+*   ⏳ **동적 매뉴얼 (Help Bar)**: 사용자가 직접 각 툴의 마크다운 가이드를 작성·저장하는 기능 **(다음 개발 목표)**
+*   ⏳ **KCS 표준시방서 자동화 탭 통합**: 내부 FastAPI 백엔드 연동 (`KcsAutomationPage`)
 
-### [Phase 4: Expansion] Electron/Tauri 기반 데스크탑 앱 확장
-*   **Iframe 제약 완벽 우회**: 웹 기반 Iframe에서 열리지 않는 모든 SaaS를 데스크탑 셸 내부에 온전히 렌더링.
+### ⏳ [Phase 4: Expansion] Electron/Tauri 기반 데스크탑 앱 확장 — **대기**
+*   **Iframe 제약 완벽 우회**: 모든 SaaS를 데스크탑 셸 내부에 온전히 렌더링.
 *   **OS 레벨 통합**: 글로벌 단축키 지원, 로컬 파일 시스템(CAD/스크립트) 드래그 앤 드롭 직접 연동.
