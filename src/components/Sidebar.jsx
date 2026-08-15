@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, PanelLeftClose, Calendar, Archive, X, Circle, BookOpen, PenTool, Box, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, PanelLeftClose, Calendar, Archive, X, Circle, BookOpen, PenTool, Box, Image as ImageIcon } from 'lucide-react';
 import { useWorkflow } from '../context/WorkflowContext';
 
 const ICON_MAP = {
@@ -157,17 +157,6 @@ export default function Sidebar({ isOpen, toggle, activeTabs, currentToolId, rem
         >
           <Archive size={18} />
           <span>리소스 & 스크립트 뱅크</span>
-        </NavLink>
-        <NavLink 
-          to="/settings" 
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors ${
-              isActive ? 'bg-arch-blue/50 text-white font-medium' : 'hover:bg-gray-800 text-gray-300 hover:text-white'
-            }`
-          }
-        >
-          <Settings size={18} />
-          <span>통합 계정 금고 (Vault)</span>
         </NavLink>
       </div>
     </aside>

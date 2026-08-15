@@ -1,5 +1,7 @@
 # ArchHub: 건축 전용 워크스페이스 플랫폼
 
+**Demo:** [https://soltocsh-prog.github.io/Archub/](https://soltocsh-prog.github.io/Archub/)
+
 ## 1. 목적 및 취지 (Purpose & Intent)
 
 **ArchHub**는 소규모 건축사사무소의 업무 효율성을 극대화하기 위해 기획된 **맞춤형 건축 전용 브라우저 플랫폼**입니다.
@@ -27,7 +29,6 @@ ArchHub는 직관적인 **3-Panel 레이아웃**을 기반으로 작동합니다
 ### 추가 통합 요소 (+a)
 *   **사내 일정 (Calendar)**: 프로젝트 마감일 및 사내 일정을 한눈에 파악.
 *   **스크립트 & 리소스 뱅크**: Rhino, SketchUp 등의 유용한 스크립트 코드나 CAD/PNG 소스 링크 모음.
-*   **통합 계정 금고 (Vault)**: 공용으로 사용하는 SaaS 서비스들의 계정 정보를 한 곳에서 안전하게 관리.
 
 ---
 
@@ -36,11 +37,11 @@ ArchHub는 직관적인 **3-Panel 레이아웃**을 기반으로 작동합니다
 불필요한 오버엔지니어링을 배제하고 **속도와 실용성**에 집중한 압축 스택을 사용합니다.
 *   **Core**: React + Vite (빠른 빌드와 모듈형 구조)
 *   **Routing**: React Router (URL 기반 상태 관리)
-*   **State**: `useState` + `localStorage` (가볍고 직관적인 UI 상태 유지)
+*   **State**: React Context + `useState` (가볍고 직관적인 UI 상태 유지)
 *   **Styling**: Tailwind CSS (빠른 그리드 레이아웃 구성 및 건축적 미학 달성)
 *   **PWA**: `vite-plugin-pwa` (설치형 앱 경험 및 오프라인 매뉴얼 캐싱)
 *   **Testing**: Vitest (핵심 비즈니스 로직 중심의 빠르고 가벼운 검증)
-*   **Utils**: `react-markdown` (도움말 파싱), `lucide-react` (아이콘), Web Crypto API (계정 암호화)
+*   **Utils**: `react-markdown` (도움말 파싱), `lucide-react` (아이콘)
 
 ---
 
@@ -70,8 +71,7 @@ Archub/
 │   │   ├── WorkflowDashboard.jsx   # 메인 대시보드
 │   │   ├── SaaSViewer.jsx          # SaaS iframe 래퍼
 │   │   ├── CalendarPage.jsx        # 일정 페이지
-│   │   ├── ResourcesPage.jsx       # 스크립트 & 리소스 뱅크
-│   │   └── VaultPage.jsx           # 계정 금고 (암호화)
+│   │   └── ResourcesPage.jsx       # 스크립트 & 리소스 뱅크
 │   │
 │   ├── context/
 │   │   └── WorkflowContext.jsx # 전역 워크플로우 상태 관리
@@ -144,13 +144,15 @@ uvicorn main:app --reload
 *   **현재 결정**: Iframe 차단 서비스의 경우 메인 스테이지에 안내 문구를 띄우고 **[새 창에서 열기]** 버튼을 제공하는 우회 방식을 채택. (사이드바 탭 상태는 유지)
 *   **향후 계획**: [Phase 4] Electron/Tauri 기반 데스크탑 앱 전환 시 자체 Webview로 완전 해결 예정.
 
-### 6.2. 통합 계정 금고 (Vault) 설계
-*   Same-Origin Policy 상 다른 도메인 iframe에 스크립트 주입이 불가하므로 '비밀번호 자동 주입' 기능은 구현하지 않음.
-*   Vault는 **사내 공용 계정 게시판** 및 **툴 관리소** 역할로 정의. 자동 로그인은 브라우저 기본 세션/쿠키 활용.
+### 6.2. 공개 배포 보안
+*   공개 데모에는 계정·비밀번호·API 키를 저장하는 화면을 포함하지 않습니다.
+*   `.env*` 파일은 Git에서 제외하며, `VITE_*`를 포함한 프런트엔드 환경 변수는 브라우저 번들에서 누구나 읽을 수 있는 공개 설정으로만 사용합니다.
+*   비밀키가 필요한 연동은 정적 Pages가 아니라 별도 백엔드/API 프록시에서 처리해야 합니다. GitHub Actions 배포에는 별도 Personal Access Token이 필요하지 않습니다.
+*   키가 실수로 커밋되면 먼저 해당 키를 폐기·재발급하고, 필요한 경우에만 [`git-filter-repo`](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository)로 이력을 정리합니다.
 
-### 6.3. 동적 워크플로우 아키텍처
-*   초기 고정 JSON(`workflows.js`) → **React Context + LocalStorage 기반 동적 상태 관리**로 리팩토링.
-*   사용자가 직접 원하는 워크플로우에 SaaS 도구를 추가/삭제 가능.
+### 6.3. 워크플로우 아키텍처
+*   공개 데모는 `workflows.js`의 정적 목록을 React Context로 제공합니다.
+*   방문자가 계정·내부 도구 URL을 저장하는 기능은 포함하지 않습니다.
 
 ---
 
@@ -169,7 +171,7 @@ uvicorn main:app --reload
 ### 🔄 [Phase 3: High-Level] 고급 기능 및 사내 데이터 통합 — **진행 중**
 *   ✅ **공용 캘린더 연동**: 복수 구글 캘린더 ID 중첩 렌더링 (`CalendarPage`, `CalendarWidget`)
 *   ✅ **스크립트 & 리소스 뱅크 UI**: 아코디언 메뉴, 태그 필터링, 프리미엄 카드 UI (`ResourcesPage`)
-*   ✅ **동적 워크플로우 & Vault UI**: Context 기반 툴 추가/삭제, `VaultPage` 구축
+*   ✅ **워크플로우**: Context 기반 정적 데모 데이터 제공
 *   ⏳ **동적 매뉴얼 (Help Bar)**: 사용자가 직접 각 툴의 마크다운 가이드를 작성·저장하는 기능 **(다음 개발 목표)**
 *   ⏳ **KCS 표준시방서 자동화 탭 통합**: 내부 FastAPI 백엔드 연동 (`KcsAutomationPage`)
 

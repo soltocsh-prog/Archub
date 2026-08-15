@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/Archub/',
   plugins: [
     react(), 
     tailwindcss(),
@@ -14,13 +15,15 @@ export default defineConfig({
         name: 'ArchHub Workspace',
         short_name: 'ArchHub',
         description: '건축 전용 맞춤형 브라우저 플랫폼',
+        start_url: '/Archub/',
+        scope: '/Archub/',
         theme_color: '#1B263B',
         background_color: '#F4F5F7',
         display: 'standalone',
         icons: [
           {
-            src: '/vite.svg',
-            sizes: '192x192',
+            src: '/Archub/favicon.svg',
+            sizes: 'any',
             type: 'image/svg+xml'
           }
         ]

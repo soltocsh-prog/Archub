@@ -1,12 +1,11 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Archive, Settings } from 'lucide-react';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import { Archive } from 'lucide-react';
 import MainLayout from './layouts/MainLayout';
 import WorkflowDashboard from './pages/WorkflowDashboard';
 import SaaSViewer from './pages/SaaSViewer';
 import CalendarPage from './pages/CalendarPage';
 import ResourcesPage from './pages/ResourcesPage';
-import VaultPage from './pages/VaultPage';
 import CalendarWidget from './components/CalendarWidget';
 
 // Placeholder Pages
@@ -36,20 +35,13 @@ const Dashboard = () => (
           </div>
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="bg-white p-6 rounded-2xl border border-arch-border hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center mb-4">
               <Archive size={20} className="text-orange-500" />
             </div>
             <h4 className="font-bold text-arch-navy mb-1 text-sm">리소스 뱅크</h4>
             <p className="text-xs text-gray-500">최신 스크립트 및 소스</p>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-arch-border hover:shadow-md transition-shadow cursor-pointer">
-            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center mb-4">
-              <Settings size={20} className="text-green-500" />
-            </div>
-            <h4 className="font-bold text-arch-navy mb-1 text-sm">계정 금고</h4>
-            <p className="text-xs text-gray-500">보안 계정 관리</p>
           </div>
         </div>
       </div>
@@ -62,7 +54,7 @@ const Dashboard = () => (
 );
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Dashboard />} />
@@ -70,10 +62,9 @@ function App() {
           <Route path="workflow/:id" element={<WorkflowDashboard />} />
           <Route path="tool/:id" element={<SaaSViewer />} />
           <Route path="resources" element={<ResourcesPage />} />
-          <Route path="settings" element={<VaultPage />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
